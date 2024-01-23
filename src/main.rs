@@ -25,7 +25,7 @@ impl Cursor {
         Cursor { x, y, virtual_x: x }
     }
 
-    fn move_cursor_x(&mut self, delta: isize, lines: &Vec<String>) {
+    fn move_x(&mut self, delta: isize, lines: &Vec<String>) {
         self.x = match self.virtual_x.checked_add_signed(delta) {
             Some(new_x) => new_x,
             None => 0,
@@ -34,7 +34,7 @@ impl Cursor {
         self.virtual_x = self.x;
     }
 
-    fn move_cursor_y(&mut self, delta: isize, lines: &Vec<String>) {
+    fn move_y(&mut self, delta: isize, lines: &Vec<String>) {
         self.y = match self.y.checked_add_signed(delta) {
             Some(new_y) => new_y,
             None => 0,
@@ -88,14 +88,14 @@ fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
                 KeyCode::Char(char) => match lines.get_mut(cursor.y) {
                     Some(line) => {
                         line.insert(cursor.x, char);
-                        cursor.move_cursor_x(1, &lines);
+                        cursor.move_x(1, &lines);
                     }
                     None => (),
                 },
-                KeyCode::Up => cursor.move_cursor_y(-1, &lines),
-                KeyCode::Down => cursor.move_cursor_y(1, &lines),
-                KeyCode::Left => cursor.move_cursor_x(-1, &lines),
-                KeyCode::Right => cursor.move_cursor_x(1, &lines),
+                KeyCode::Up => cursor.move_y(-1, &lines),
+                KeyCode::Down => cursor.move_y(1, &lines),
+                KeyCode::Left => cursor.move_x(-1, &lines),
+                KeyCode::Right => cursor.move_x(1, &lines),
                 KeyCode::Esc => break,
                 _ => (),
             },

@@ -92,6 +92,17 @@ fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
                     }
                     None => (),
                 },
+                KeyCode::Backspace => {
+                    if cursor.x > 0 {
+                        match lines.get_mut(cursor.y) {
+                            Some(line) => {
+                                line.remove(cursor.x - 1);
+                                cursor.move_x(-1, &lines);
+                            }
+                            None => (),
+                        }
+                    }
+                }
                 KeyCode::Up => cursor.move_y(-1, &lines),
                 KeyCode::Down => cursor.move_y(1, &lines),
                 KeyCode::Left => cursor.move_x(-1, &lines),

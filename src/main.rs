@@ -30,7 +30,7 @@ impl Cursor {
             Some(new_x) => new_x,
             None => 0,
         };
-        self.x = self.x.min(lines[self.y].len() - 1);
+        self.x = self.x.min(lines[self.y].len());
         self.virtual_x = self.x;
     }
 
@@ -40,7 +40,7 @@ impl Cursor {
             None => 0,
         };
         self.y = self.y.min(lines.len() - 1);
-        self.x = self.virtual_x.min(lines[self.y].len() - 1)
+        self.x = self.virtual_x.min(lines[self.y].len())
     }
 }
 

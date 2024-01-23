@@ -15,15 +15,23 @@ use crossterm::{
 struct Cursor {
     x: usize,
     y: usize,
+    // Virtual x keeps track of x if you only move y. This is used to avoid
+    // changing x position if moving to and from a shorter line.
+    virtual_x: usize,
 }
 
 impl Cursor {
+    fn new(x: usize, y: usize) -> Self {
+        Cursor { x, y, virtual_x: x }
+    }
+
     fn move_cursor_x(&mut self, delta: isize, lines: &Vec<String>) {
-        self.x = match self.x.checked_add_signed(delta) {
+        self.x = match self.virtual_x.checked_add_signed(delta) {
             Some(new_x) => new_x,
             None => 0,
         };
-        self.x = self.x.min(lines[self.y].len())
+        self.x = self.x.min(lines[self.y].len());
+        self.virtual_x = self.x;
     }
 
     fn move_cursor_y(&mut self, delta: isize, lines: &Vec<String>) {
@@ -32,6 +40,7 @@ impl Cursor {
             None => 0,
         };
         self.y = self.y.min(lines.len());
+        self.x = self.virtual_x.min(lines[self.y].len())
     }
 }
 
@@ -70,7 +79,7 @@ fn read_lines(file_path: &str) -> io::Result<Vec<String>> {
 }
 
 fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
-    let mut cursor = Cursor { x: 0, y: 0 };
+    let mut cursor = Cursor::new(0, 0);
     loop {
         match read()? {
             Event::FocusGained => println!("FocusGained"),

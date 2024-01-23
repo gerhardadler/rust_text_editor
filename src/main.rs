@@ -1,7 +1,7 @@
 use std::{
     env,
     fs::File,
-    io::{self, stdout, BufRead, BufReader},
+    io::{self, stdout, BufRead, BufReader, Write},
 };
 
 use crossterm::{
@@ -17,6 +17,24 @@ struct Cursor {
     y: usize,
 }
 
+impl Cursor {
+    fn move_cursor_x(&mut self, delta: isize, lines: &Vec<String>) {
+        self.x = match self.x.checked_add_signed(delta) {
+            Some(new_x) => new_x,
+            None => 0,
+        };
+        self.x = self.x.min(lines[self.y].len())
+    }
+
+    fn move_cursor_y(&mut self, delta: isize, lines: &Vec<String>) {
+        self.y = match self.y.checked_add_signed(delta) {
+            Some(new_y) => new_y,
+            None => 0,
+        };
+        self.y = self.y.min(lines.len());
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
@@ -27,7 +45,7 @@ fn main() {
     disable_raw_mode().expect("Failed to disable raw mode");
 }
 
-fn render(lines: &Vec<String>) -> io::Result<()> {
+fn render(lines: &Vec<String>, cursor: &Cursor) -> io::Result<()> {
     let mut stdout = stdout();
     stdout.queue(cursor::MoveTo(0, 0))?;
     stdout.queue(terminal::Clear(terminal::ClearType::All))?;
@@ -35,6 +53,10 @@ fn render(lines: &Vec<String>) -> io::Result<()> {
     for line in lines {
         stdout.queue(style::Print(format!("{}\r\n", line)))?;
     }
+    stdout.queue(cursor::MoveTo(cursor.x as u16, cursor.y as u16))?;
+    stdout.queue(cursor::Show)?;
+
+    stdout.flush()?;
     Ok(())
 }
 
@@ -58,16 +80,18 @@ fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
                     Some(line) => line.push(char),
                     None => (),
                 },
-                KeyCode::Up => cursor.y -= 1,
-                KeyCode::Down => cursor.y += 1,
-                KeyCode::Left => cursor.x -= 1,
-                KeyCode::Right => cursor.x += 1,
+                KeyCode::Up => cursor.move_cursor_y(-1, &lines),
+                KeyCode::Down => cursor.move_cursor_y(1, &lines),
+                KeyCode::Left => cursor.move_cursor_x(-1, &lines),
+                KeyCode::Right => cursor.move_cursor_x(1, &lines),
+                KeyCode::Esc => break,
                 _ => (),
             },
             Event::Mouse(event) => println!("{:?}", event),
             Event::Paste(data) => println!("Pasted {:?}", data),
             Event::Resize(width, height) => println!("New size {}x{}", width, height),
         };
-        render(&lines).unwrap();
+        render(&lines, &cursor).unwrap();
     }
+    Ok(())
 }

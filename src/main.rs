@@ -86,7 +86,10 @@ fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
             Event::FocusLost => println!("FocusLost"),
             Event::Key(event) => match event.code {
                 KeyCode::Char(char) => match lines.get_mut(cursor.y) {
-                    Some(line) => line.push(char),
+                    Some(line) => {
+                        line.insert(cursor.x, char);
+                        cursor.move_cursor_x(1, &lines);
+                    }
                     None => (),
                 },
                 KeyCode::Up => cursor.move_cursor_y(-1, &lines),

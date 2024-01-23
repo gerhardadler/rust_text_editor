@@ -12,12 +12,17 @@ use crossterm::{
     QueueableCommand,
 };
 
+struct Cursor {
+    x: usize,
+    y: usize,
+}
+
 fn main() {
-    enable_raw_mode().expect("Failed to enable raw mode");
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
     let mut lines = read_lines(&file_path).unwrap();
 
+    enable_raw_mode().expect("Failed to enable raw mode");
     event_loop(&mut lines).unwrap();
     disable_raw_mode().expect("Failed to disable raw mode");
 }
@@ -43,15 +48,20 @@ fn read_lines(file_path: &str) -> io::Result<Vec<String>> {
 }
 
 fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
+    let mut cursor = Cursor { x: 0, y: 0 };
     loop {
         match read()? {
             Event::FocusGained => println!("FocusGained"),
             Event::FocusLost => println!("FocusLost"),
             Event::Key(event) => match event.code {
-                KeyCode::Char(char) => match lines.last_mut() {
+                KeyCode::Char(char) => match lines.get_mut(cursor.y) {
                     Some(line) => line.push(char),
                     None => (),
                 },
+                KeyCode::Up => cursor.y -= 1,
+                KeyCode::Down => cursor.y += 1,
+                KeyCode::Left => cursor.x -= 1,
+                KeyCode::Right => cursor.x += 1,
                 _ => (),
             },
             Event::Mouse(event) => println!("{:?}", event),

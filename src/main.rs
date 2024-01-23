@@ -26,7 +26,8 @@ impl Cursor {
     }
 
     fn move_x(&mut self, delta: isize, lines: &Vec<String>) {
-        self.x = match self.virtual_x.checked_add_signed(delta) {
+        self.x = self.virtual_x.min(lines[self.y].len());
+        self.x = match self.x.checked_add_signed(delta) {
             Some(new_x) => new_x,
             None => 0,
         };
@@ -40,7 +41,7 @@ impl Cursor {
             None => 0,
         };
         self.y = self.y.min(lines.len() - 1);
-        self.x = self.virtual_x.min(lines[self.y].len())
+        self.x = self.virtual_x.min(lines[self.y].len());
     }
 }
 

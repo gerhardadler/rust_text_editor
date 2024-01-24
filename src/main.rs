@@ -43,6 +43,18 @@ impl Cursor {
         self.y = self.y.min(lines.len() - 1);
         self.x = self.virtual_x.min(lines[self.y].len());
     }
+
+    fn set_x(&mut self, new_x: usize, lines: &Vec<String>) {
+        self.x = new_x;
+        self.x = self.x.min(lines[self.y].len());
+        self.virtual_x = self.x;
+    }
+
+    fn set_y(&mut self, new_y: usize, lines: &Vec<String>) {
+        self.y = new_y;
+        self.y = self.y.min(lines.len() - 1);
+        self.x = self.virtual_x.min(lines[self.y].len());
+    }
 }
 
 fn main() {
@@ -125,6 +137,15 @@ fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
                             line.remove(cursor.x);
                         }
                     }
+                }
+                KeyCode::Enter => {
+                    let current_line = &mut lines[cursor.y];
+
+                    let excess: String = current_line.drain(cursor.x..).collect();
+                    lines.insert(cursor.y + 1, excess);
+
+                    cursor.move_y(1, lines);
+                    cursor.set_x(0, lines);
                 }
                 KeyCode::Up => cursor.move_y(-1, &lines),
                 KeyCode::Down => cursor.move_y(1, &lines),

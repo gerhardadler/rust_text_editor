@@ -94,10 +94,20 @@ fn event_loop(lines: &mut Vec<String>) -> io::Result<()> {
                     None => (),
                 },
                 KeyCode::Backspace => {
-                    if cursor.x > 0 {
+                    if cursor.x == 0 {
+                        if cursor.y > 0 {
+                            let line = lines.remove(cursor.y);
+                            if let Some(prev_line) = lines.get_mut(cursor.y - 1) {
+                                let old_prev_line_len = prev_line.len() as isize;
+                                prev_line.push_str(&line);
+                                cursor.move_y(-1, lines);
+                                cursor.move_x(old_prev_line_len, lines);
+                            }
+                        };
+                    } else {
+                        cursor.move_x(-1, lines);
                         if let Some(line) = lines.get_mut(cursor.y) {
-                            line.remove(cursor.x - 1);
-                            cursor.move_x(-1, &lines);
+                            line.remove(cursor.x);
                         }
                     }
                 }

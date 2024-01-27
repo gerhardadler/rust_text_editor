@@ -32,6 +32,9 @@ fn key_handler(
                     _ => (),
                 }
             } else {
+                if char == ' ' {
+                    text_buffer.new_change_frame();
+                }
                 let mut line = text_buffer.lines[cursor.y].clone();
                 line.insert(cursor.x, char);
                 text_buffer.remove(cursor.y);
@@ -58,6 +61,7 @@ fn key_handler(
                 text_buffer.remove(cursor.y);
                 text_buffer.insert(cursor.y, line);
             }
+            text_buffer.new_change_frame();
         }
         KeyCode::Delete => {
             if cursor.x == text_buffer.lines[cursor.y].len() {
@@ -74,6 +78,7 @@ fn key_handler(
                 text_buffer.remove(cursor.y);
                 text_buffer.insert(cursor.y, line);
             }
+            text_buffer.new_change_frame();
         }
         KeyCode::Enter => {
             if cursor.x == text_buffer.lines[cursor.y].len() {
@@ -86,6 +91,7 @@ fn key_handler(
             }
             cursor.move_y(1, &text_buffer.lines);
             cursor.set_x(0, &text_buffer.lines);
+            text_buffer.new_change_frame();
         }
         KeyCode::Up => cursor.move_y(-1, &text_buffer.lines),
         KeyCode::Down => cursor.move_y(1, &text_buffer.lines),

@@ -1,7 +1,8 @@
 pub struct TextBuffer {
     pub lines: Vec<String>,
-    history: Vec<ChangeType>,
+    history: Vec<Vec<ChangeType>>,
     current_state_index: usize,
+    create_new_change_frame: bool,
 }
 
 struct Change {
@@ -20,6 +21,7 @@ impl TextBuffer {
             lines,
             history: Vec::new(),
             current_state_index: 0,
+            create_new_change_frame: true,
         };
     }
 
@@ -43,22 +45,32 @@ impl TextBuffer {
 
     fn record(&mut self, change_type: ChangeType) {
         self.history.truncate(self.current_state_index + 1);
-        self.history.push(change_type);
-        self.current_state_index = self.history.len() - 1;
+        if self.create_new_change_frame || self.history.len() == 0 {
+            self.history.push(Vec::new());
+            self.current_state_index = self.history.len() - 1;
+            self.create_new_change_frame = false;
+        }
+        self.history.last_mut().unwrap().push(change_type);
+    }
+
+    pub fn new_change_frame(&mut self) {
+        self.create_new_change_frame = true;
     }
 
     pub fn undo(&mut self) {
         if self.current_state_index == 0 {
             return;
         };
-        match &self.history[self.current_state_index] {
-            ChangeType::Insert(change) => {
-                self.lines.remove(change.index);
-            }
-            ChangeType::Remove(change) => {
-                self.lines.insert(change.index, change.element.clone());
-            }
-        };
+        for change_type in self.history[self.current_state_index].iter().rev() {
+            match change_type {
+                ChangeType::Insert(change) => {
+                    self.lines.remove(change.index);
+                }
+                ChangeType::Remove(change) => {
+                    self.lines.insert(change.index, change.element.clone());
+                }
+            };
+        }
         self.current_state_index -= 1;
     }
 
@@ -66,14 +78,16 @@ impl TextBuffer {
         if self.current_state_index == self.history.len() {
             return;
         };
-        match &self.history[self.current_state_index] {
-            ChangeType::Insert(change) => {
-                self.lines.insert(change.index, change.element.clone());
-            }
-            ChangeType::Remove(change) => {
-                self.lines.remove(change.index);
-            }
-        };
+        for change_type in self.history[self.current_state_index].iter().rev() {
+            match change_type {
+                ChangeType::Insert(change) => {
+                    self.lines.insert(change.index, change.element.clone());
+                }
+                ChangeType::Remove(change) => {
+                    self.lines.remove(change.index);
+                }
+            };
+        }
         self.current_state_index += 1;
     }
 }

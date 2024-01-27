@@ -32,13 +32,13 @@ impl TextBuffer {
         self.lines.insert(index, element);
     }
 
-    pub fn remove(&mut self, index: usize) {
+    pub fn remove(&mut self, index: usize) -> String {
         let change = Change {
             element: self.lines[index].clone(),
             index,
         };
         self.record(ChangeType::Remove(change));
-        self.lines.remove(index);
+        self.lines.remove(index)
     }
 
     fn record(&mut self, change_type: ChangeType) {

@@ -31,6 +31,26 @@ fn key_handler(
             text_buffer.insert(cursor.y, line);
             cursor.move_x(1, &text_buffer.lines);
         }
+        KeyCode::Backspace => {
+            if cursor.x == 0 {
+                if cursor.y > 0 {
+                    let line = text_buffer.remove(cursor.y);
+                    let mut prev_line = text_buffer.remove(cursor.y - 1);
+                    let old_prev_line_len = prev_line.len();
+                    prev_line.push_str(&line);
+                    text_buffer.insert(cursor.y - 1, prev_line);
+
+                    cursor.move_x(old_prev_line_len as isize, &text_buffer.lines);
+                    cursor.move_y(-1, &text_buffer.lines);
+                };
+            } else {
+                cursor.move_x(-1, &text_buffer.lines);
+                let mut line = text_buffer.lines[cursor.y].clone();
+                line.remove(cursor.x);
+                text_buffer.remove(cursor.y);
+                text_buffer.insert(cursor.y, line);
+            }
+        }
         // KeyCode::Backspace => {
         //     if cursor.x == 0 {
         //         if cursor.y > 0 {

@@ -15,6 +15,14 @@ enum ChangeType {
 }
 
 impl TextBuffer {
+    pub fn new(lines: Vec<String>) -> TextBuffer {
+        return TextBuffer {
+            lines,
+            history: Vec::new(),
+            current_state_index: 0,
+        };
+    }
+
     pub fn insert(&mut self, index: usize, element: String) {
         let change = Change {
             element: element.clone(),

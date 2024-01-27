@@ -1,4 +1,4 @@
-use crossterm::event::{Event, KeyCode};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{cursor::Cursor, text_buffer::TextBuffer};
 
@@ -13,23 +13,31 @@ pub fn event_handler(
     cursor: &mut Cursor,
 ) -> StopEventLoop {
     match event {
-        Event::Key(event) => key_handler(&event.code, text_buffer, cursor),
+        Event::Key(event) => key_handler(&event, text_buffer, cursor),
         _ => StopEventLoop::No(),
     }
 }
 
 fn key_handler(
-    key_code: &KeyCode,
+    event: &KeyEvent,
     text_buffer: &mut TextBuffer,
     cursor: &mut Cursor,
 ) -> StopEventLoop {
-    match key_code {
+    match event.code {
         KeyCode::Char(char) => {
-            let mut line = text_buffer.lines[cursor.y].clone();
-            line.insert(cursor.x, *char);
-            text_buffer.remove(cursor.y);
-            text_buffer.insert(cursor.y, line);
-            cursor.move_x(1, &text_buffer.lines);
+            if let KeyModifiers::CONTROL = event.modifiers {
+                match char {
+                    'z' => text_buffer.undo(),
+                    'y' => text_buffer.redo(),
+                    _ => (),
+                }
+            } else {
+                let mut line = text_buffer.lines[cursor.y].clone();
+                line.insert(cursor.x, char);
+                text_buffer.remove(cursor.y);
+                text_buffer.insert(cursor.y, line);
+                cursor.move_x(1, &text_buffer.lines);
+            }
         }
         KeyCode::Backspace => {
             if cursor.x == 0 {

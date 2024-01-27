@@ -48,30 +48,32 @@ impl TextBuffer {
     }
 
     pub fn undo(&mut self) {
-        if self.current_state_index > 0 {
-            self.current_state_index -= 1;
-            match &self.history[self.current_state_index] {
-                ChangeType::Insert(change) => {
-                    self.lines.remove(change.index);
-                }
-                ChangeType::Remove(change) => {
-                    self.lines.insert(change.index, change.element.clone());
-                }
-            };
-        }
+        if self.current_state_index == 0 {
+            return;
+        };
+        match &self.history[self.current_state_index] {
+            ChangeType::Insert(change) => {
+                self.lines.remove(change.index);
+            }
+            ChangeType::Remove(change) => {
+                self.lines.insert(change.index, change.element.clone());
+            }
+        };
+        self.current_state_index -= 1;
     }
 
     pub fn redo(&mut self) {
-        if self.current_state_index < self.history.len() - 1 {
-            self.current_state_index += 1;
-            match &self.history[self.current_state_index] {
-                ChangeType::Insert(change) => {
-                    self.lines.insert(change.index, change.element.clone());
-                }
-                ChangeType::Remove(change) => {
-                    self.lines.remove(change.index);
-                }
-            };
-        }
+        if self.current_state_index == self.history.len() {
+            return;
+        };
+        match &self.history[self.current_state_index] {
+            ChangeType::Insert(change) => {
+                self.lines.insert(change.index, change.element.clone());
+            }
+            ChangeType::Remove(change) => {
+                self.lines.remove(change.index);
+            }
+        };
+        self.current_state_index += 1;
     }
 }

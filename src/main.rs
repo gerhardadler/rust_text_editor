@@ -5,7 +5,7 @@ use rust_text_editor::{events::event_loop, read_lines, text_buffer::TextBuffer};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let file_path = &args[1];
+    let file_path = "test.txt";
     let lines = read_lines::read_lines(&file_path).unwrap();
     let mut text_buffer = TextBuffer::new(lines);
 

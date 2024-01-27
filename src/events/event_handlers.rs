@@ -51,21 +51,22 @@ fn key_handler(
                 text_buffer.insert(cursor.y, line);
             }
         }
-        // KeyCode::Delete => {
-        //     let current_line = &lines[cursor.y];
-        //     if cursor.x == current_line.len() {
-        //         if cursor.y + 1 < lines.len() {
-        //             let next_line = lines.remove(cursor.y + 1);
-        //             if let Some(line) = lines.get_mut(cursor.y) {
-        //                 line.push_str(&next_line);
-        //             }
-        //         };
-        //     } else {
-        //         if let Some(line) = lines.get_mut(cursor.y) {
-        //             line.remove(cursor.x);
-        //         }
-        //     }
-        // }
+        KeyCode::Delete => {
+            if cursor.x == text_buffer.lines[cursor.y].len() {
+                if cursor.y + 1 < text_buffer.lines.len() {
+                    let next_line = text_buffer.remove(cursor.y + 1);
+                    let mut line = text_buffer.remove(cursor.y);
+                    line.push_str(&next_line);
+                    text_buffer.insert(cursor.y, line);
+                };
+            } else {
+                cursor.move_x(-1, &text_buffer.lines);
+                let mut line = text_buffer.lines[cursor.y].clone();
+                line.remove(cursor.x);
+                text_buffer.remove(cursor.y);
+                text_buffer.insert(cursor.y, line);
+            }
+        }
         KeyCode::Enter => {
             if cursor.x == text_buffer.lines[cursor.y].len() {
                 text_buffer.insert(cursor.y + 1, String::new());

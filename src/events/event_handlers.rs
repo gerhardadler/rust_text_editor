@@ -28,7 +28,8 @@ fn key_handler(
             let mut line = text_buffer.lines[cursor.y].clone();
             line.insert(cursor.x, *char);
             text_buffer.remove(cursor.y);
-            text_buffer.insert(cursor.y, line)
+            text_buffer.insert(cursor.y, line);
+            cursor.move_x(1, &text_buffer.lines);
         }
         // KeyCode::Backspace => {
         //     if cursor.x == 0 {
@@ -72,11 +73,11 @@ fn key_handler(
         //     cursor.move_y(1, lines);
         //     cursor.set_x(0, lines);
         // }
-        // KeyCode::Up => cursor.move_y(-1, &lines),
-        // KeyCode::Down => cursor.move_y(1, &lines),
-        // KeyCode::Left => cursor.move_x(-1, &lines),
-        // KeyCode::Right => cursor.move_x(1, &lines),
-        // KeyCode::Esc => return StopEventLoop::Yes(),
+        KeyCode::Up => cursor.move_y(-1, &text_buffer.lines),
+        KeyCode::Down => cursor.move_y(1, &text_buffer.lines),
+        KeyCode::Left => cursor.move_x(-1, &text_buffer.lines),
+        KeyCode::Right => cursor.move_x(1, &text_buffer.lines),
+        KeyCode::Esc => return StopEventLoop::Yes(),
         _ => (),
     };
     StopEventLoop::No()

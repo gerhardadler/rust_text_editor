@@ -51,24 +51,6 @@ fn key_handler(
                 text_buffer.insert(cursor.y, line);
             }
         }
-        // KeyCode::Backspace => {
-        //     if cursor.x == 0 {
-        //         if cursor.y > 0 {
-        //             let line = lines.remove(cursor.y);
-        //             if let Some(prev_line) = lines.get_mut(cursor.y - 1) {
-        //                 let old_prev_line_len = prev_line.len() as isize;
-        //                 prev_line.push_str(&line);
-        //                 cursor.move_y(-1, lines);
-        //                 cursor.move_x(old_prev_line_len, lines);
-        //             }
-        //         };
-        //     } else {
-        //         cursor.move_x(-1, lines);
-        //         if let Some(line) = lines.get_mut(cursor.y) {
-        //             line.remove(cursor.x);
-        //         }
-        //     }
-        // }
         // KeyCode::Delete => {
         //     let current_line = &lines[cursor.y];
         //     if cursor.x == current_line.len() {
@@ -84,15 +66,18 @@ fn key_handler(
         //         }
         //     }
         // }
-        // KeyCode::Enter => {
-        //     let current_line = &mut lines[cursor.y];
-
-        //     let excess: String = current_line.drain(cursor.x..).collect();
-        //     lines.insert(cursor.y + 1, excess);
-
-        //     cursor.move_y(1, lines);
-        //     cursor.set_x(0, lines);
-        // }
+        KeyCode::Enter => {
+            if cursor.x == text_buffer.lines[cursor.y].len() {
+                text_buffer.insert(cursor.y + 1, String::new());
+            } else {
+                let mut current_line = text_buffer.remove(cursor.y);
+                let excess: String = current_line.drain(cursor.x..).collect();
+                text_buffer.insert(cursor.y, current_line);
+                text_buffer.insert(cursor.y + 1, excess);
+            }
+            cursor.move_y(1, &text_buffer.lines);
+            cursor.set_x(0, &text_buffer.lines);
+        }
         KeyCode::Up => cursor.move_y(-1, &text_buffer.lines),
         KeyCode::Down => cursor.move_y(1, &text_buffer.lines),
         KeyCode::Left => cursor.move_x(-1, &text_buffer.lines),

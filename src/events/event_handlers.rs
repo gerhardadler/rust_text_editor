@@ -40,8 +40,8 @@ fn key_handler(
                     prev_line.push_str(&line);
                     text_buffer.insert(cursor.y - 1, prev_line);
 
-                    cursor.move_x(old_prev_line_len as isize, &text_buffer.lines);
                     cursor.move_y(-1, &text_buffer.lines);
+                    cursor.move_x(old_prev_line_len as isize, &text_buffer.lines);
                 };
             } else {
                 cursor.move_x(-1, &text_buffer.lines);

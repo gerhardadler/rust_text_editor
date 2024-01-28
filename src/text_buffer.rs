@@ -2,8 +2,8 @@ use crate::cursor::Cursor;
 
 pub struct TextBuffer {
     pub lines: Vec<String>,
-    history: Vec<ChangeFrame>,
-    current_state_index: usize,
+    undo_stack: Vec<ChangeFrame>,
+    redo_stack: Vec<ChangeFrame>,
     new_change_frame: Option<ChangeFrame>,
 }
 
@@ -26,8 +26,8 @@ impl TextBuffer {
     pub fn new(lines: Vec<String>) -> TextBuffer {
         return TextBuffer {
             lines,
-            history: Vec::new(),
-            current_state_index: 0,
+            undo_stack: Vec::new(),
+            redo_stack: Vec::new(),
             new_change_frame: Some(ChangeFrame {
                 change_types: Vec::new(),
                 cursor: Cursor::new(0, 0),
@@ -54,14 +54,13 @@ impl TextBuffer {
     }
 
     fn record(&mut self, change_type: ChangeType) {
-        self.history.truncate(self.current_state_index + 1);
+        self.redo_stack.clear();
 
         let new_change_frame = std::mem::replace(&mut self.new_change_frame, None);
         if let Some(change_frame) = new_change_frame {
-            self.history.push(change_frame);
-            self.current_state_index = self.history.len() - 1;
+            self.undo_stack.push(change_frame);
         }
-        self.history
+        self.undo_stack
             .last_mut()
             .unwrap()
             .change_types
@@ -76,40 +75,36 @@ impl TextBuffer {
     }
 
     pub fn undo(&mut self, cursor: &mut Cursor) {
-        if self.current_state_index == 0 {
-            return;
-        };
-        let change_frame = &self.history[self.current_state_index];
-        for change_type in change_frame.change_types.iter().rev() {
-            match change_type {
-                ChangeType::Insert(change) => {
-                    self.lines.remove(change.index);
-                }
-                ChangeType::Remove(change) => {
-                    self.lines.insert(change.index, change.element.clone());
-                }
-            };
+        if let Some(change_frame) = self.undo_stack.pop() {
+            for change_type in change_frame.change_types.iter().rev() {
+                match change_type {
+                    ChangeType::Insert(change) => {
+                        self.lines.remove(change.index);
+                    }
+                    ChangeType::Remove(change) => {
+                        self.lines.insert(change.index, change.element.clone());
+                    }
+                };
+            }
+            let _ = std::mem::replace(cursor, change_frame.cursor.clone());
+            self.redo_stack.push(change_frame);
         }
-        let _ = std::mem::replace(cursor, change_frame.cursor.clone());
-        self.current_state_index -= 1;
     }
 
     pub fn redo(&mut self, cursor: &mut Cursor) {
-        if self.current_state_index == self.history.len() {
-            return;
-        };
-        let change_frame = &self.history[self.current_state_index];
-        for change_type in change_frame.change_types.iter().rev() {
-            match change_type {
-                ChangeType::Insert(change) => {
-                    self.lines.insert(change.index, change.element.clone());
-                }
-                ChangeType::Remove(change) => {
-                    self.lines.remove(change.index);
-                }
-            };
+        if let Some(change_frame) = self.redo_stack.pop() {
+            for change_type in change_frame.change_types.iter() {
+                match change_type {
+                    ChangeType::Insert(change) => {
+                        self.lines.insert(change.index, change.element.clone());
+                    }
+                    ChangeType::Remove(change) => {
+                        self.lines.remove(change.index);
+                    }
+                };
+            }
+            let _ = std::mem::replace(cursor, change_frame.cursor.clone());
+            self.undo_stack.push(change_frame);
         }
-        let _ = std::mem::replace(cursor, change_frame.cursor.clone());
-        self.current_state_index += 1;
     }
 }

@@ -75,7 +75,7 @@ impl TextBuffer {
     }
 
     pub fn undo(&mut self, cursor: &mut Cursor) {
-        if let Some(change_frame) = self.undo_stack.pop() {
+        if let Some(mut change_frame) = self.undo_stack.pop() {
             for change_type in change_frame.change_types.iter().rev() {
                 match change_type {
                     ChangeType::Insert(change) => {
@@ -86,13 +86,17 @@ impl TextBuffer {
                     }
                 };
             }
-            let _ = std::mem::replace(cursor, change_frame.cursor.clone());
+            self.new_change_frame = Some(ChangeFrame {
+                change_types: Vec::new(),
+                cursor: cursor.clone(),
+            });
+            let _ = std::mem::swap(cursor, &mut change_frame.cursor);
             self.redo_stack.push(change_frame);
         }
     }
 
     pub fn redo(&mut self, cursor: &mut Cursor) {
-        if let Some(change_frame) = self.redo_stack.pop() {
+        if let Some(mut change_frame) = self.redo_stack.pop() {
             for change_type in change_frame.change_types.iter() {
                 match change_type {
                     ChangeType::Insert(change) => {
@@ -103,7 +107,7 @@ impl TextBuffer {
                     }
                 };
             }
-            let _ = std::mem::replace(cursor, change_frame.cursor.clone());
+            let _ = std::mem::swap(cursor, &mut change_frame.cursor);
             self.undo_stack.push(change_frame);
         }
     }

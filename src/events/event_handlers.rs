@@ -27,13 +27,13 @@ fn key_handler(
         KeyCode::Char(char) => {
             if let KeyModifiers::CONTROL = event.modifiers {
                 match char {
-                    'z' => text_buffer.undo(),
-                    'y' => text_buffer.redo(),
+                    'z' => text_buffer.undo(cursor),
+                    'y' => text_buffer.redo(cursor),
                     _ => (),
                 }
             } else {
                 if char == ' ' {
-                    text_buffer.new_change_frame();
+                    text_buffer.new_change_frame(cursor.clone());
                 }
                 let mut line = text_buffer.lines[cursor.y].clone();
                 line.insert(cursor.x, char);
@@ -61,7 +61,7 @@ fn key_handler(
                 text_buffer.remove(cursor.y);
                 text_buffer.insert(cursor.y, line);
             }
-            text_buffer.new_change_frame();
+            text_buffer.new_change_frame(cursor.clone());
         }
         KeyCode::Delete => {
             if cursor.x == text_buffer.lines[cursor.y].len() {
@@ -78,7 +78,7 @@ fn key_handler(
                 text_buffer.remove(cursor.y);
                 text_buffer.insert(cursor.y, line);
             }
-            text_buffer.new_change_frame();
+            text_buffer.new_change_frame(cursor.clone());
         }
         KeyCode::Enter => {
             if cursor.x == text_buffer.lines[cursor.y].len() {
@@ -91,7 +91,7 @@ fn key_handler(
             }
             cursor.move_y(1, &text_buffer.lines);
             cursor.set_x(0, &text_buffer.lines);
-            text_buffer.new_change_frame();
+            text_buffer.new_change_frame(cursor.clone());
         }
         KeyCode::Up => cursor.move_y(-1, &text_buffer.lines),
         KeyCode::Down => cursor.move_y(1, &text_buffer.lines),

@@ -11,9 +11,11 @@ pub fn event_loop(text_buffer: &mut TextBuffer) -> io::Result<()> {
     let mut view = View {
         width: 10,
         height: 10,
+        v_scroll: 0,
+        h_scroll: 0,
     };
     loop {
-        let stop_event_loop = event_handler(&event::read()?, text_buffer, &mut cursor);
+        let stop_event_loop = event_handler(&event::read()?, text_buffer, &mut cursor, &mut view);
         if let StopEventLoop::Yes() = stop_event_loop {
             break;
         }

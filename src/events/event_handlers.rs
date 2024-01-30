@@ -1,6 +1,6 @@
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
-use crate::{cursor::Cursor, text_buffer::TextBuffer};
+use crate::{cursor::Cursor, text_buffer::TextBuffer, view::View};
 
 pub enum StopEventLoop {
     Yes(),
@@ -11,9 +11,10 @@ pub fn event_handler(
     event: &Event,
     text_buffer: &mut TextBuffer,
     cursor: &mut Cursor,
+    view: &mut View,
 ) -> StopEventLoop {
     match event {
-        Event::Key(event) => key_handler(&event, text_buffer, cursor),
+        Event::Key(event) => key_handler(&event, text_buffer, cursor, view),
         _ => StopEventLoop::No(),
     }
 }
@@ -22,6 +23,7 @@ fn key_handler(
     event: &KeyEvent,
     text_buffer: &mut TextBuffer,
     cursor: &mut Cursor,
+    view: &mut View,
 ) -> StopEventLoop {
     match event.code {
         KeyCode::Char(char) => {
@@ -93,10 +95,34 @@ fn key_handler(
             cursor.set_x(0, &text_buffer.lines);
             text_buffer.new_change_frame(cursor.clone());
         }
-        KeyCode::Up => cursor.move_y(-1, &text_buffer.lines),
-        KeyCode::Down => cursor.move_y(1, &text_buffer.lines),
-        KeyCode::Left => cursor.move_x(-1, &text_buffer.lines),
-        KeyCode::Right => cursor.move_x(1, &text_buffer.lines),
+        KeyCode::Up => {
+            if let KeyModifiers::ALT = event.modifiers {
+                view.move_v_scroll(-1);
+            } else {
+                cursor.move_y(-1, &text_buffer.lines)
+            }
+        }
+        KeyCode::Down => {
+            if let KeyModifiers::ALT = event.modifiers {
+                view.move_v_scroll(1);
+            } else {
+                cursor.move_y(1, &text_buffer.lines)
+            }
+        }
+        KeyCode::Left => {
+            if let KeyModifiers::ALT = event.modifiers {
+                view.move_h_scroll(-1);
+            } else {
+                cursor.move_x(-1, &text_buffer.lines)
+            }
+        }
+        KeyCode::Right => {
+            if let KeyModifiers::ALT = event.modifiers {
+                view.move_h_scroll(1);
+            } else {
+                cursor.move_x(1, &text_buffer.lines)
+            }
+        }
         KeyCode::Esc => return StopEventLoop::Yes(),
         _ => (),
     };

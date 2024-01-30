@@ -9,8 +9,17 @@ pub fn render(text_buffer: &TextBuffer, cursor: &Cursor, view: &View) -> io::Res
     stdout.queue(cursor::MoveTo(0, 0))?;
     stdout.queue(terminal::Clear(terminal::ClearType::All))?;
 
-    for line in text_buffer.lines.iter().take(view.height) {
-        let capped_line = line.chars().take(view.width).collect::<String>();
+    for line in text_buffer
+        .lines
+        .iter()
+        .skip(view.v_scroll)
+        .take(view.height)
+    {
+        let capped_line = line
+            .chars()
+            .skip(view.h_scroll)
+            .take(view.width)
+            .collect::<String>();
         stdout.queue(style::Print(format!("{}\r\n", capped_line)))?;
     }
     stdout.queue(cursor::MoveTo(cursor.x as u16, cursor.y as u16))?;

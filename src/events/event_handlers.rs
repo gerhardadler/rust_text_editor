@@ -97,28 +97,28 @@ fn key_handler(
         }
         KeyCode::Up => {
             if let KeyModifiers::ALT = event.modifiers {
-                view.move_v_scroll(-1);
+                view.move_v_scroll(-1, &text_buffer.lines);
             } else {
                 cursor.move_y(-1, &text_buffer.lines)
             }
         }
         KeyCode::Down => {
             if let KeyModifiers::ALT = event.modifiers {
-                view.move_v_scroll(1);
+                view.move_v_scroll(1, &text_buffer.lines);
             } else {
                 cursor.move_y(1, &text_buffer.lines)
             }
         }
         KeyCode::Left => {
             if let KeyModifiers::ALT = event.modifiers {
-                view.move_h_scroll(-1);
+                view.move_h_scroll(-1, &text_buffer.lines);
             } else {
                 cursor.move_x(-1, &text_buffer.lines)
             }
         }
         KeyCode::Right => {
             if let KeyModifiers::ALT = event.modifiers {
-                view.move_h_scroll(1);
+                view.move_h_scroll(1, &text_buffer.lines);
             } else {
                 cursor.move_x(1, &text_buffer.lines)
             }

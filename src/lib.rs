@@ -1,3 +1,4 @@
+pub mod coordinate;
 pub mod cursor;
 pub mod events;
 pub mod read_lines;

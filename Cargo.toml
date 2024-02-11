@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 crossterm = "0.27.0"
+simplelog = "0.12"
+log = "0.4"

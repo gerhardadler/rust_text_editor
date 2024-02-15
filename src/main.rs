@@ -1,7 +1,8 @@
-use std::env;
 use std::fs::File;
+use std::{env, io};
 
-use crossterm::terminal;
+use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::{execute, terminal};
 use log::{debug, LevelFilter};
 use rust_text_editor::{events::event_loop, read_lines, text_buffer::TextBuffer};
 use simplelog::{CombinedLogger, Config, WriteLogger};
@@ -22,6 +23,8 @@ fn main() {
     debug!("PROGRAM START");
 
     terminal::enable_raw_mode().expect("Failed to enable raw mode");
+    execute!(io::stdout(), EnterAlternateScreen).unwrap();
     event_loop::event_loop(&mut text_buffer).unwrap();
     terminal::disable_raw_mode().expect("Failed to disable raw mode");
+    execute!(io::stdout(), LeaveAlternateScreen).unwrap();
 }

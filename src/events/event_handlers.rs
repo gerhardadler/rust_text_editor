@@ -1,4 +1,5 @@
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use log::debug;
 
 use crate::{cursor::Cursor, text_buffer::TextBuffer, view::View};
 
@@ -15,6 +16,11 @@ pub fn event_handler(
 ) -> StopEventLoop {
     match event {
         Event::Key(event) => key_handler(&event, text_buffer, cursor, view),
+        Event::Resize(x, y) => {
+            view.width = *x as usize;
+            view.height = *y as usize;
+            StopEventLoop::No()
+        }
         _ => StopEventLoop::No(),
     }
 }

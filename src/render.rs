@@ -1,6 +1,7 @@
 use std::io::{self, Write};
 
 use crossterm::{cursor, style, terminal, QueueableCommand};
+use log::debug;
 
 use crate::{cursor::Cursor, text_buffer::TextBuffer, view::View};
 
@@ -31,5 +32,10 @@ pub fn render(text_buffer: &TextBuffer, cursor: &Cursor, view: &View) -> io::Res
     }
 
     stdout.flush()?;
+    debug!(
+        "view.width: {}, view.height: {}, view.h_scroll: {}, view.v_scroll: {}",
+        view.width, view.height, view.h_scroll, view.v_scroll
+    );
+
     Ok(())
 }

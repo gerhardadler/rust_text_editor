@@ -48,13 +48,13 @@ impl Cursor {
     pub fn get_render_position(&self, view: &View) -> Option<Coordinate<usize>> {
         let x;
         let y;
-        if view.h_scroll <= self.x && self.x <= (view.h_scroll + view.width) {
+        if view.h_scroll <= self.x && self.x < (view.h_scroll + view.width) {
             x = self.x - view.h_scroll;
         } else {
             return None;
         };
 
-        if view.v_scroll <= self.y && self.y <= (view.v_scroll + view.height) {
+        if view.v_scroll <= self.y && self.y < (view.v_scroll + view.height) {
             y = self.y - view.v_scroll;
         } else {
             return None;

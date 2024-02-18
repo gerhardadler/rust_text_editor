@@ -1,5 +1,4 @@
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
-use log::debug;
 
 use crate::{cursor::Cursor, text_buffer::TextBuffer, view::View};
 

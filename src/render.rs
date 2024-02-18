@@ -10,18 +10,20 @@ pub fn render(text_buffer: &TextBuffer, cursor: &Cursor, view: &View) -> io::Res
     stdout.queue(cursor::MoveTo(0, 0))?;
     stdout.queue(terminal::Clear(terminal::ClearType::All))?;
 
-    for line in text_buffer
+    for (i, line) in text_buffer
         .lines
         .iter()
         .skip(view.v_scroll)
         .take(view.height)
+        .enumerate()
     {
         let capped_line = line
             .chars()
             .skip(view.h_scroll)
             .take(view.width)
             .collect::<String>();
-        stdout.queue(style::Print(format!("{}\r\n", capped_line)))?;
+        stdout.queue(cursor::MoveTo(0, i as u16))?;
+        stdout.queue(style::Print(format!("{}", capped_line)))?;
     }
 
     if let Some(coordinate) = cursor.get_render_position(view) {

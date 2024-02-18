@@ -17,7 +17,8 @@ pub fn event_handler(
         Event::Key(event) => key_handler(&event, text_buffer, cursor, view),
         Event::Resize(x, y) => {
             view.width = *x as usize;
-            view.height = *y as usize;
+            // -1 due to bottom bar
+            view.height = *y as usize - 1;
             StopEventLoop::No()
         }
         _ => StopEventLoop::No(),

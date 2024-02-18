@@ -15,11 +15,11 @@ pub fn event_loop(text_buffer: &mut TextBuffer) -> io::Result<()> {
         h_scroll: 0,
     };
     loop {
+        render::render(&text_buffer, &cursor, &view).unwrap();
         let stop_event_loop = event_handler(&event::read()?, text_buffer, &mut cursor, &mut view);
         if let StopEventLoop::Yes() = stop_event_loop {
             break;
         }
-        render::render(&text_buffer, &cursor, &view).unwrap();
     }
     Ok(())
 }

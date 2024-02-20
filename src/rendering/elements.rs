@@ -1,4 +1,14 @@
-fn render_footer() {
+use std::io::{self, Stdout};
+
+use crossterm::{
+    cursor,
+    style::{self, Stylize},
+    QueueableCommand,
+};
+
+use crate::{cursor::Cursor, view::View};
+
+pub fn render_footer(stdout: &mut Stdout, view: &View, cursor: &Cursor) -> io::Result<()> {
     let num_spaces = view.width - 2 - cursor.x.to_string().len() - cursor.y.to_string().len();
     let footer = format!(
         "{: <space$}{cursor_y}:{cursor_x} ",
@@ -13,4 +23,5 @@ fn render_footer() {
         "{}",
         style::PrintStyledContent(footer.reverse())
     )))?;
+    Ok(())
 }

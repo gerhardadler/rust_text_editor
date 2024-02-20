@@ -7,6 +7,8 @@ use crossterm::{
 use log::debug;
 use std::io::{self, Write};
 
+mod elements;
+
 pub fn render(text_buffer: &TextBuffer, cursor: &Cursor, view: &View) -> io::Result<()> {
     let mut stdout = io::stdout();
     stdout.queue(cursor::MoveTo(0, 0))?;
@@ -28,20 +30,7 @@ pub fn render(text_buffer: &TextBuffer, cursor: &Cursor, view: &View) -> io::Res
         stdout.queue(style::Print(format!("{}", capped_line)))?;
     }
 
-    let num_spaces = view.width - 2 - cursor.x.to_string().len() - cursor.y.to_string().len();
-    let footer = format!(
-        "{: <space$}{cursor_y}:{cursor_x} ",
-        "",
-        cursor_y = cursor.y,
-        cursor_x = cursor.x,
-        space = num_spaces
-    );
-
-    stdout.queue(cursor::MoveTo(0, view.height as u16))?;
-    stdout.queue(style::Print(format!(
-        "{}",
-        style::PrintStyledContent(footer.reverse())
-    )))?;
+    elements::render_footer(&mut stdout, view, cursor)?;
 
     if let Some(coordinate) = cursor.get_render_position(view) {
         stdout.queue(cursor::MoveTo(coordinate.x as u16, coordinate.y as u16))?;

@@ -1,7 +1,7 @@
 use crate::{cursor::Cursor, text_buffer::TextBuffer, view::View};
 use crossterm::{
     cursor,
-    style::{self, Stylize},
+    style::{self},
     terminal, QueueableCommand,
 };
 use log::debug;

@@ -24,19 +24,21 @@ fn main() {
     terminal::enable_raw_mode().expect("Failed to enable raw mode");
     execute!(io::stdout(), EnterAlternateScreen).unwrap();
 
-    let result = panic::catch_unwind(|| event_loop::event_loop(lines));
+    let default_panic = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        terminal::disable_raw_mode().expect("Failed to disable raw mode");
+        execute!(io::stdout(), LeaveAlternateScreen).unwrap();
+        default_panic(info);
+    }));
+
+    let result = event_loop::event_loop(lines);
 
     match result {
-        Ok(Ok(_)) => (),
-        Ok(Err(e)) => {
+        Ok(_) => (),
+        Err(e) => {
             terminal::disable_raw_mode().expect("Failed to disable raw mode");
             execute!(io::stdout(), LeaveAlternateScreen).unwrap();
             panic!("Error: {:?}", e);
-        }
-        Err(payload) => {
-            terminal::disable_raw_mode().expect("Failed to disable raw mode");
-            execute!(io::stdout(), LeaveAlternateScreen).unwrap();
-            panic::resume_unwind(payload);
         }
     }
 }

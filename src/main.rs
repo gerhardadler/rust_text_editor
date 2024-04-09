@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::{env, io};
+use std::{env, io, panic};
 
 use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{execute, terminal};
@@ -11,7 +11,6 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = "test.txt";
     let lines = read_lines::read_lines(&file_path).unwrap();
-    let mut text_buffer = TextBuffer::new(lines);
 
     CombinedLogger::init(vec![WriteLogger::new(
         LevelFilter::Debug,
@@ -24,7 +23,20 @@ fn main() {
 
     terminal::enable_raw_mode().expect("Failed to enable raw mode");
     execute!(io::stdout(), EnterAlternateScreen).unwrap();
-    event_loop::event_loop(&mut text_buffer).unwrap();
-    terminal::disable_raw_mode().expect("Failed to disable raw mode");
-    execute!(io::stdout(), LeaveAlternateScreen).unwrap();
+
+    let result = panic::catch_unwind(|| event_loop::event_loop(lines));
+
+    match result {
+        Ok(Ok(_)) => (),
+        Ok(Err(e)) => {
+            terminal::disable_raw_mode().expect("Failed to disable raw mode");
+            execute!(io::stdout(), LeaveAlternateScreen).unwrap();
+            panic!("Error: {:?}", e);
+        }
+        Err(payload) => {
+            terminal::disable_raw_mode().expect("Failed to disable raw mode");
+            execute!(io::stdout(), LeaveAlternateScreen).unwrap();
+            panic::resume_unwind(payload);
+        }
+    }
 }

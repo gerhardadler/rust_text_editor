@@ -3,7 +3,8 @@ use crate::{cursor::Cursor, rendering, text_buffer::TextBuffer, view::View};
 use crossterm::{event, terminal};
 use std::io;
 
-pub fn event_loop(text_buffer: &mut TextBuffer) -> io::Result<()> {
+pub fn event_loop(lines: Vec<String>) -> io::Result<()> {
+    let mut text_buffer = TextBuffer::new(lines);
     let mut cursor = Cursor::new(0, 0);
     let terminal_size = terminal::size()?;
     let mut view = View {
@@ -14,7 +15,8 @@ pub fn event_loop(text_buffer: &mut TextBuffer) -> io::Result<()> {
     };
     loop {
         rendering::render(&text_buffer, &cursor, &view).unwrap();
-        let stop_event_loop = event_handler(&event::read()?, text_buffer, &mut cursor, &mut view);
+        let stop_event_loop =
+            event_handler(&event::read()?, &mut text_buffer, &mut cursor, &mut view);
         if let StopEventLoop::Yes() = stop_event_loop {
             break;
         }
